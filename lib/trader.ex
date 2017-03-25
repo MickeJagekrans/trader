@@ -10,22 +10,21 @@ defmodule Trader do
     (body |> Poison.decode!())["Technical Analysis: MACD"]
   end
 
-  # TODO: better structure
   defp format_response(macd_source) do
     macd_source |> Map.keys
-    |> Enum.map(& %{date: &1, value: macd_source[&1]})
-    |> Enum.map(fn point ->
-      %{value: %{
+    |> Enum.map(fn date -> 
+      macd_source[date] |> IO.inspect
+      %{
         "MACD" => macd,
         "MACD_Hist" => macd_hist,
         "MACD_Signal" => macd_signal
-      }} = point
+      } = macd_source[date]
 
-      Map.put(point, :value, %{
+      %{date: date, value: %{
         macd: macd |> String.to_float,
         macd_hist: macd_hist |> String.to_float,
         macd_signal: macd_signal |> String.to_float
-      })
+      }}
     end)
   end
 end
