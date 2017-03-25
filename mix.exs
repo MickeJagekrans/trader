@@ -15,6 +15,7 @@ defmodule Trader.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
+    [applications: [:httpoison]]
     [extra_applications: [:logger]]
   end
 
@@ -28,6 +29,10 @@ defmodule Trader.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:httpoison, "~> 0.10.0"}]
+    [
+      {:httpoison, "~> 0.10.0"},
+      {:poison, "~> 1.5"},
+      {:espec, "~> 1.3.3", only: :test},
+    ]
   end
 end
