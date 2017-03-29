@@ -1,20 +1,19 @@
 defmodule RSI do
-  @url "http://www.alphavantage.co/query?function=RSI&symbol=MSFT&interval=15min&time_period=10&series_type=close&apikey="
-
-  def get_current do
-    get_rsi() |> format_response() |> Enum.sort(& &1[:date] > &2[:date])
+  def get_current(symbol, interval) do
+    get_rsi(symbol, interval) |> format_response() |> Enum.sort(& elem(&1, 0) > elem(&2, 0))
   end
 
-  def get_rsi do
-    %{body: body} = HTTPoison.get!(@url <> System.get_env("AV_API_KEY"))
+  def get_rsi(symbol, interval) do
+    url = "http://www.alphavantage.co/query?function=RSI&symbol=#{symbol}&interval=#{interval}&time_period=14&series_type=close&apikey=#{System.get_env("AV_API_KEY")}"
+    %{body: body} = HTTPoison.get!(url)
     ((body |> Poison.decode!())["Technical Analysis: RSI"])
   end
 
-  def format_response(rsi_source) do
+  defp format_response(rsi_source) do
     rsi_source |> Map.keys
     |> Enum.map(fn date ->
       %{ "RSI" => rsi } = rsi_source[date]
-      %{date: date, value: %{ rsi: rsi |> String.to_float }}
+      {date, rsi |> String.to_float }
     end)
   end
 end

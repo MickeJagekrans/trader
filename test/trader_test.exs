@@ -2,7 +2,9 @@ defmodule TraderTest do
   use ExUnit.Case
   doctest Trader
 
-  test "the truth" do
-    assert 1 + 1 == 2
+  test "see gain/loss" do
+    points = Trader.calculate("MSFT", "15min")
+
+    IO.inspect(points)
   end
 end

@@ -1,34 +1,32 @@
 defmodule MACD do
-  @url "http://www.alphavantage.co/query?function=MACD&symbol=ATVI&interval=15min&series_type=close&apikey="
+  @hist_diff 0.011
 
-  def get_current do
-    get_macd() |> format_response() |> Enum.sort(& &1[:date] > &2[:date])
+  def get_current(symbol, interval) do
+    get_macd(symbol, interval) |> format_response() |> Enum.sort(& &1[:date] > &2[:date])
   end
 
   def find_crossovers(points, acc \\ [])
   def find_crossovers([_], acc), do: acc
   def find_crossovers([hd|tl = [hd2|_]], acc) do
     acc = 
-      case %{value: %{macd_hist: macd_hist}} = hd do
-        _ when macd_hist < 0.005 and macd_hist > -0.005 ->
-          acc ++ [hd |> Map.put(:value, get_direction(hd, hd2))]
+      case %{date: date, value: %{macd_hist: macd_hist}} = hd do
+        _ when macd_hist < @hist_diff and macd_hist > -@hist_diff ->
+          acc ++ [{date, get_direction(hd, hd2)}]
         _ -> acc
       end
     tl |> find_crossovers(acc)
   end
 
-  defp get_direction(%{value: value = %{macd: macd}}, %{value: %{macd: prev_macd}}) do
-    direction =
-      case macd > prev_macd do
-        true -> :up
-        _ -> :down
-      end
-
-    value |> Map.put(:direction, direction)
+  defp get_direction(%{value: %{macd: macd}}, %{value: %{macd: prev_macd}}) do
+    cond do
+      macd > prev_macd -> :up
+      true -> :down
+    end
   end
 
-  defp get_macd do
-    %{body: body} = HTTPoison.get!(@url <> System.get_env("AV_API_KEY"))
+  defp get_macd(symbol, interval) do
+    url = "http://www.alphavantage.co/query?function=MACD&symbol=#{symbol}&interval=#{interval}&series_type=close&apikey=#{System.get_env("AV_API_KEY")}"
+    %{body: body} = HTTPoison.get!(url)
     (body |> Poison.decode!())["Technical Analysis: MACD"]
   end
 
