@@ -5,17 +5,12 @@ defmodule Stock do
 
   defp get_intraday(symbol, interval) do
     url = "http://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=#{symbol}&interval=#{interval}&outputsize=full&apikey=#{System.get_env("AV_API_KEY")}"
-    %{body: body} = HTTPoison.get!(url)
-    (body |> Poison.decode!())["Time Series (#{interval})"]
+    (HTTPoison.get!(url).body |> Poison.decode!())["Time Series (#{interval})"]
   end
 
   defp format_response(points) do
-    points
-    |> Map.keys
-    |> Enum.reduce(%{}, fn date, acc->
-      %{
-        "4. close" => close
-      } = points[date]
+    points |> Map.keys |> Enum.reduce(%{}, fn date, acc->
+      %{"4. close" => close} = points[date]
       Map.put(acc, date, close |> String.to_float)
     end)
   end

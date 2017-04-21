@@ -26,8 +26,7 @@ defmodule MACD do
 
   defp get_macd(symbol, interval) do
     url = "http://www.alphavantage.co/query?function=MACD&symbol=#{symbol}&interval=#{interval}&series_type=close&apikey=#{System.get_env("AV_API_KEY")}"
-    %{body: body} = HTTPoison.get!(url)
-    (body |> Poison.decode!())["Technical Analysis: MACD"]
+    (HTTPoison.get!(url).body |> Poison.decode!())["Technical Analysis: MACD"]
   end
 
   defp format_response(macd_source) do

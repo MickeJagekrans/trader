@@ -5,15 +5,10 @@ defmodule RSI do
 
   def get_rsi(symbol, interval) do
     url = "http://www.alphavantage.co/query?function=RSI&symbol=#{symbol}&interval=#{interval}&time_period=14&series_type=close&apikey=#{System.get_env("AV_API_KEY")}"
-    %{body: body} = HTTPoison.get!(url)
-    ((body |> Poison.decode!())["Technical Analysis: RSI"])
+    (HTTPoison.get!(url).body |> Poison.decode!())["Technical Analysis: RSI"]
   end
 
   defp format_response(rsi_source) do
-    rsi_source |> Map.keys
-    |> Enum.map(fn date ->
-      %{ "RSI" => rsi } = rsi_source[date]
-      {date, rsi |> String.to_float }
-    end)
+    rsi_source |> Map.keys |> Enum.map(& {&1, rsi_source[&1]["RSI"] |> String.to_float})
   end
 end
